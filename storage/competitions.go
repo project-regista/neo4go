@@ -8,8 +8,14 @@ import (
 
 // TODO: Create queries
 const (
-	competitionQuery         = "MERGE (n:NODE {foo: {foo}, bar: {bar}})"
-	competitionsQuery        = "MERGE (n:NODE {foo: {foo}, bar: {bar}})"
+	competitionQuery = `MERGE (c:Competition{id: {ID} }) 
+								ON CREATE SET c.cup = {Cup}, c.name = {Name}, c.active = {Active}
+								ON MATCH SET c.cup = {Cup}, c.name = {Name}, c.active = {Active}`
+
+	competitionsQuery = `MERGE (c:Competition{id: {ID} }) 
+								ON CREATE SET c.cup = {Cup}, c.name = {Name}, c.active = {Active}
+								ON MATCH SET c.cup = {Cup}, c.name = {Name}, c.active = {Active}`
+
 	competitionsSeasonsQuery = "MERGE (n:NODE {foo: {foo}, bar: {bar}})"
 )
 
@@ -24,13 +30,17 @@ func CompetitionStmt(conn bolt.Conn) (bolt.Stmt, error) {
 }
 
 // CompetitionsStmt prepare a neo4j statement for a list competitions
-func CompetitionsStmt(conn bolt.Conn) (bolt.Stmt, error) {
+func CompetitionsStmt(conn bolt.Conn, n int) (bolt.PipelineStmt, error) {
+	s := make([]string, 0, 0)
+	for i := 0; i < n; i++ {
+		s = append(s, competitionsQuery)
+	}
 
-	stmt, err := conn.PrepareNeo(competitionsQuery)
+	pipeStmt, err := conn.PreparePipeline(s...)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create competitions statement: %s", err)
 	}
-	return stmt, nil
+	return pipeStmt, nil
 }
 
 // CompetitionsSeasonsStmt prepare a neo4j statement for a list of competitions w/ season data
