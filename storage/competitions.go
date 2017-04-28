@@ -7,8 +7,12 @@ import (
 )
 
 const competitionQuery = `MERGE (c:Competition{id: {ID} })
-													ON CREATE SET c.cup = {Cup}, c.name = {Name}, c.active = {Active}
-													ON MATCH SET c.cup = {Cup}, c.name = {Name}, c.active = {Active}`
+							ON CREATE SET c.cup = {Cup}, c.name = {Name}, c.active = {Active}
+							ON MATCH SET c.cup = {Cup}, c.name = {Name}, c.active = {Active}
+							MERGE (cc:Country{id: {Country_ID} })
+							ON CREATE SET cc.name = {Country_Name}, cc.isoCode = {Country_IsoCode}, cc.flag = {Country_Flag}
+							ON MATCH SET cc.name = {Country_Name}, cc.isoCode = {Country_IsoCode}, cc.flag = {Country_Flag}
+							MERGE (cc)-[:ORGANISES]->(c)`
 
 // CompetitionStmt prepare a neo4j statement for single competition data
 func CompetitionStmt(conn bolt.Conn) (bolt.Stmt, error) {
